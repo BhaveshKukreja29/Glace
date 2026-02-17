@@ -1,0 +1,39 @@
+// Quicksort in Glace
+
+fn quicksort(arr) {
+    if len(arr) <= 1 {
+        return arr
+    }
+
+    let pivot = arr[0]
+    mut left = []
+    mut right = []
+
+    loop i in 1..len(arr) {
+        if arr[i] < pivot {
+            push(left, arr[i])
+        } else {
+            push(right, arr[i])
+        }
+    }
+
+    let sorted_left = quicksort(left)
+    let sorted_right = quicksort(right)
+
+    // Concatenate: sorted_left + [pivot] + sorted_right
+    mut result = []
+    loop item in sorted_left {
+        push(result, item)
+    }
+    push(result, pivot)
+    loop item in sorted_right {
+        push(result, item)
+    }
+    return result
+}
+
+let data = [38, 27, 43, 3, 9, 82, 10]
+print("Before: " + str(data))
+
+let sorted = quicksort(data)
+print("After:  " + str(sorted))

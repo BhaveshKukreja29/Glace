@@ -1,0 +1,19 @@
+// Hello World
+print("Hello, Glace!")
+
+// Variables
+let name = "World"
+mut count = 0
+
+// Loop
+loop count < 5 {
+    print("Count: " + str(count))
+    count = count + 1
+}
+
+// Function
+fn greet(who) {
+    print("Hello, " + who + "!")
+}
+
+greet(name)

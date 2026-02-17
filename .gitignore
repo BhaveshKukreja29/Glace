@@ -1,0 +1,28 @@
+# Compiled binary
+glace
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Go coverage
+*.out
+*.prof
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+docs/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
