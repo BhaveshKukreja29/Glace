@@ -1,0 +1,28 @@
+// Closures in Glace — counter and accumulator patterns
+
+fn counter(start) {
+    mut n = start
+    return fn() {
+        n = n + 1
+        return n
+    }
+}
+
+let tick = counter(0)
+print(tick())  // 1
+print(tick())  // 2
+print(tick())  // 3
+
+// Accumulator: builds a running total
+fn accumulator() {
+    mut total = 0
+    return fn(x) {
+        total = total + x
+        return total
+    }
+}
+
+let acc = accumulator()
+print(acc(5))   // 5
+print(acc(10))  // 15
+print(acc(3))   // 18

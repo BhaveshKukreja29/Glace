@@ -1,0 +1,37 @@
+// Data processing with higher-order functions
+
+let scores = [85, 42, 93, 67, 78, 55, 91, 36, 88, 72]
+
+// Filter passing scores, sort descending
+let top_scores = filter(sort(filter(scores, fn(x) => x >= 60), fn(a, b) => b - a), fn(x) => x >= 60)
+print("Top scores: " + str(top_scores))
+
+// Average of passing scores
+let passing = filter(scores, fn(x) => x >= 60)
+let total = reduce(passing, 0, fn(acc, x) => acc + x)
+let avg = total / len(passing)
+print("Average: " + str(avg))
+
+// Transform: grade each score
+let grades = map(scores, fn(s) {
+    if s >= 90 { return "A" }
+    if s >= 80 { return "B" }
+    if s >= 70 { return "C" }
+    if s >= 60 { return "D" }
+    return "F"
+})
+print("Grades: " + str(grades))
+
+// keys/values/has on a map
+let student = {"name": "Alice", "grade": "A", "score": "93"}
+print("Keys: " + str(keys(student)))
+print("Values: " + str(values(student)))
+print("Has grade? " + str(has(student, "grade")))
+
+// Count how many failed
+let fail_count = len(filter(scores, fn(x) => x < 60))
+print("Failed: " + str(fail_count))
+
+// Single-line pipeline
+let doubled_passing = filter(scores, fn(x) => x >= 60) |> map(fn(x) => x * 2)
+print("Doubled passing: " + str(doubled_passing))
