@@ -1,0 +1,27 @@
+// Showcase: filter, map, reduce, sort with custom comparator
+
+let nums = [5, 3, 8, 1, 9, 2, 7, 4, 6]
+
+// filter: keep only even numbers
+let evens = filter(nums, fn(x) { return x % 2 == 0 })
+print("Evens:", evens)
+
+// map: square each number
+let squared = map(nums, fn(x) { return x * x })
+print("Squared:", squared)
+
+// reduce: sum all numbers
+let total = reduce(nums, 0, fn(acc, x) { return acc + x })
+print("Sum:", total)
+
+// sort: natural ascending order
+let asc = sort(nums)
+print("Sorted asc:", asc)
+
+// sort: descending with custom comparator  (fn(a,b) returns negative if a should come first)
+let desc = sort(nums, fn(a, b) { return b - a })
+print("Sorted desc:", desc)
+
+// chained: sort evens descending then square them
+let result = map(sort(evens, fn(a, b) { return b - a }), fn(x) { return x * x })
+print("Evens desc squared:", result)
