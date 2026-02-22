@@ -1,19 +1,17 @@
 package lexer
 
-// Lexer performs lexical analysis on Glace source code,
-// converting a string of source text into a slice of Tokens.
+// Lexer performs lexical analysis on Glace source code.
 type Lexer struct {
 	source  string
-	file    string // filename for error reporting
+	file    string
 	tokens  []Token
-	start   int // start of current token
-	current int // current position in source
+	start   int
+	current int
 	line    int
 	column  int
 }
 
 // New creates a new Lexer for the given source code.
-// The file parameter is used for error position reporting.
 func New(source string, file string) *Lexer {
 	return &Lexer{
 		source: source,
@@ -24,33 +22,170 @@ func New(source string, file string) *Lexer {
 	}
 }
 
-// Tokenize scans the entire source and returns the list of tokens.
-// The last token is always TOKEN_EOF.
-//
-// TODO: Implement the full scanner. This stub returns only EOF.
+// Tokenize scans the source and returns a slice of tokens[cite: 20].
 func (l *Lexer) Tokenize() []Token {
-	// --- IMPLEMENT THIS ---
-	// Walk through l.source character by character.
-	// Use l.advance(), l.peek(), l.peekNext() helpers.
-	// For each character, determine the token type:
-	//   - Single char: +, -, *, /, %, (, ), {, }, [, ], ,, :
-	//   - Two char:    ==, !=, <=, >=, |>, .., =>, ?., ??
-	//   - Numbers:     scanNumber()
-	//   - Strings:     scanString() (handle ${} interpolation)
-	//   - Identifiers: scanIdentifier() (check Keywords map)
-	//   - Newlines:    emit TOKEN_NEWLINE (skip consecutive blanks)
-	//   - Whitespace:  skip (spaces, tabs)
-	//   - Comments:    // single-line comments, skip to end of line
-	//
-	// Call l.addToken(tokenType, literal) for each token found.
+	for !l.isAtEnd() {
+		l.start = l.current
+		l.scanToken()
+	}
 
 	l.addToken(TOKEN_EOF, "")
 	return l.tokens
 }
 
-// --- Helper methods (implement these) ---
+func (l *Lexer) scanToken() {
+	ch := l.advance()
 
-// advance consumes the current character and returns it.
+	switch ch {
+	case ' ', '\t', '\r':
+		return
+	case '\n':
+		l.line++
+		l.column = 1
+		l.addToken(TOKEN_NEWLINE, "\n")
+	case '(': l.addToken(TOKEN_LPAREN, "(")
+	case ')': l.addToken(TOKEN_RPAREN, ")")
+	case '{': l.addToken(TOKEN_LBRACE, "{")
+	case '}': 
+		l.addToken(TOKEN_RBRACE, "}")
+		// After a closing brace, check if we are inside a string interpolation
+		// to resume scanning the string tail.
+		if l.peek() == '"' {
+			l.start = l.current
+			l.advance() // consume "
+			l.addToken(TOKEN_STRING_END, "\"")
+		}
+	case '[': l.addToken(TOKEN_LBRACKET, "[")
+	case ']': l.addToken(TOKEN_RBRACKET, "]")
+	case ',': l.addToken(TOKEN_COMMA, ",")
+	case ':': l.addToken(TOKEN_COLON, ":")
+	case '+': l.addToken(TOKEN_PLUS, "+")
+	case '-': l.addToken(TOKEN_MINUS, "-")
+	case '*': l.addToken(TOKEN_STAR, "*")
+	case '%': l.addToken(TOKEN_PERCENT, "%")
+	case '.':
+		if l.match('.') {
+			l.addToken(TOKEN_DOTDOT, "..")
+		} else {
+			l.addToken(TOKEN_DOT, ".")
+		}
+	case '/':
+		if l.match('/') {
+			for l.peek() != '\n' && !l.isAtEnd() {
+				l.advance()
+			}
+		} else {
+			l.addToken(TOKEN_SLASH, "/")
+		}
+	case '=':
+		if l.match('=') {
+			l.addToken(TOKEN_EQ, "==")
+		} else if l.match('>') {
+			l.addToken(TOKEN_ARROW, "=>")
+		} else {
+			l.addToken(TOKEN_ASSIGN, "=")
+		}
+	case '!':
+		if l.match('=') {
+			l.addToken(TOKEN_NEQ, "!=")
+		} else {
+			l.addToken(TOKEN_NOT, "!")
+		}
+	case '<':
+		if l.match('=') {
+			l.addToken(TOKEN_LTE, "<=")
+		} else {
+			l.addToken(TOKEN_LT, "<")
+		}
+	case '>':
+		if l.match('=') {
+			l.addToken(TOKEN_GTE, ">=")
+		} else {
+			l.addToken(TOKEN_GT, ">")
+		}
+	case '|':
+		if l.match('>') {
+			l.addToken(TOKEN_PIPE, "|>") // Pipeline operator 
+		} else {
+			l.addToken(TOKEN_ILLEGAL, "|")
+		}
+	case '?':
+		if l.match('.') {
+			l.addToken(TOKEN_QMARK, "?.") // Safe access [cite: 402]
+		} else if l.match('?') {
+			l.addToken(TOKEN_COALESCE, "??") // Coalesce [cite: 402]
+		} else {
+			l.addToken(TOKEN_ILLEGAL, "?")
+		}
+	case '"':
+		l.scanString()
+	
+	default:
+		if isDigit(ch) {
+			l.scanNumber()
+		} else if isAlpha(ch) {
+			l.scanIdentifier()
+		} else {
+			l.addToken(TOKEN_ILLEGAL, string(ch))
+		}
+	}
+}
+
+func (l *Lexer) scanIdentifier() {
+	for isAlphaNumeric(l.peek()) {
+		l.advance()
+	}
+	text := l.source[l.start:l.current]
+	l.addToken(LookupIdent(text), text) // Check keywords [cite: 19]
+}
+
+func (l *Lexer) scanNumber() {
+	for isDigit(l.peek()) {
+		l.advance()
+	}
+	if l.peek() == '.' && isDigit(l.peekNext()) {
+		l.advance()
+		for isDigit(l.peek()) {
+			l.advance()
+		}
+		l.addToken(TOKEN_FLOAT, l.source[l.start:l.current])
+		return
+	}
+	l.addToken(TOKEN_INT, l.source[l.start:l.current])
+}
+
+func (l *Lexer) scanString() {
+	for !l.isAtEnd() && l.peek() != '"' {
+		if l.peek() == '$' && l.peekNext() == '{' {
+			// Part 1: Emit STRING_START [cite: 106]
+			l.addToken(TOKEN_STRING_START, l.source[l.start+1:l.current])
+			
+			// Part 2: Consume and emit interpolation start
+			l.advance() // $
+			l.advance() // {
+			l.addToken(TOKEN_LBRACE, "${")
+			
+			// Return to Tokenize loop to handle expression inside 
+			return 
+		}
+		if l.peek() == '\n' {
+			l.line++
+			l.column = 1
+		}
+		l.advance()
+	}
+
+	if l.isAtEnd() {
+		l.addToken(TOKEN_ILLEGAL, "unterminated string")
+		return
+	}
+
+	l.advance() // Closing "
+	value := l.source[l.start+1 : l.current-1]
+	l.addToken(TOKEN_STRING, value)
+}
+
+// Low-level Helpers
 func (l *Lexer) advance() byte {
 	ch := l.source[l.current]
 	l.current++
@@ -58,28 +193,29 @@ func (l *Lexer) advance() byte {
 	return ch
 }
 
-// peek returns the current character without consuming it.
-func (l *Lexer) peek() byte {
-	if l.current >= len(l.source) {
-		return 0
+func (l *Lexer) match(expected byte) bool {
+	if l.isAtEnd() || l.source[l.current] != expected {
+		return false
 	}
+	l.current++
+	l.column++
+	return true
+}
+
+func (l *Lexer) peek() byte {
+	if l.isAtEnd() { return 0 }
 	return l.source[l.current]
 }
 
-// peekNext returns the character after the current one.
 func (l *Lexer) peekNext() byte {
-	if l.current+1 >= len(l.source) {
-		return 0
-	}
+	if l.current+1 >= len(l.source) { return 0 }
 	return l.source[l.current+1]
 }
 
-// isAtEnd returns true if we've consumed all source characters.
 func (l *Lexer) isAtEnd() bool {
 	return l.current >= len(l.source)
 }
 
-// addToken appends a token to the token list.
 func (l *Lexer) addToken(tokenType TokenType, literal string) {
 	l.tokens = append(l.tokens, Token{
 		Type:    tokenType,
@@ -92,19 +228,6 @@ func (l *Lexer) addToken(tokenType TokenType, literal string) {
 	})
 }
 
-// isDigit returns true if the byte is an ASCII digit.
-func isDigit(ch byte) bool {
-	return ch >= '0' && ch <= '9'
-}
-
-// isAlpha returns true if the byte is a letter or underscore.
-func isAlpha(ch byte) bool {
-	return (ch >= 'a' && ch <= 'z') ||
-		(ch >= 'A' && ch <= 'Z') ||
-		ch == '_'
-}
-
-// isAlphaNumeric returns true if the byte is a letter, digit, or underscore.
-func isAlphaNumeric(ch byte) bool {
-	return isAlpha(ch) || isDigit(ch)
-}
+func isDigit(ch byte) bool { return ch >= '0' && ch <= '9' }
+func isAlpha(ch byte) bool { return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' }
+func isAlphaNumeric(ch byte) bool { return isAlpha(ch) || isDigit(ch) }
