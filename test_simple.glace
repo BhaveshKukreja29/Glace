@@ -1,3 +1,0 @@
-﻿print("Hello from test")
-let x = 5
-print(x)
