@@ -1,0 +1,26 @@
+// Bubble Sort in Glace
+
+fn bubblesort(arr) {
+    let n = len(arr)
+    mut swapped = true
+
+    loop swapped {
+        swapped = false
+        loop i in 0..(n - 1) {
+            if arr[i] > arr[i + 1] {
+                // Swap
+                let temp = arr[i]
+                arr[i] = arr[i + 1]
+                arr[i + 1] = temp
+                swapped = true
+            }
+        }
+    }
+    return arr
+}
+
+mut data = [64, 34, 25, 12, 22, 11, 90]
+print("Before: " + str(data))
+
+bubblesort(data)
+print("After:  " + str(data))

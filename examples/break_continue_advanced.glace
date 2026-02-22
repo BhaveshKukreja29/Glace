@@ -1,0 +1,50 @@
+// --- GLACE-003: Comprehensive break and continue examples ---
+// Multiple use cases demonstrating break and continue functionality
+
+print("=== Example 1: Simple Break ===")
+// CHANGE: Using break to exit loop early
+mut count = 0
+loop count < 100 {
+    print("Count: " + str(count))
+    count = count + 1
+    if count == 3 { break }  // Exit when count reaches 3
+}
+
+print("=== Example 2: Simple Continue ===")
+// CHANGE: Using continue to skip specific values
+loop i in 1..6 {
+    if i == 3 { continue }  // Skip iteration when i equals 3
+    print("Value: " + str(i))
+}
+
+print("=== Example 3: Break with Array ===")
+// CHANGE: Using break to find first even number in array
+let numbers = [1, 3, 5, 7, 8, 9]
+mut found = none
+
+loop num in numbers {
+    if num % 2 == 0 {
+        found = num
+        break  // Stop searching once found
+    }
+}
+
+if found != none {
+    print("First even number: " + str(found))
+} else {
+    print("No even number found")
+}
+
+print("=== Example 4: Nested Loop with Continue ===")
+// CHANGE: Using continue to skip even rows
+mut total = 0
+loop i in 1..4 {
+    if i % 2 == 0 { continue }  // Skip even rows
+    loop j in 1..3 {
+        total = total + 1
+    }
+}
+
+print("Total iterations (skipping even rows): " + str(total))
+
+print("All examples completed!")

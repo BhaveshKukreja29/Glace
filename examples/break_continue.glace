@@ -1,0 +1,47 @@
+// --- GLACE-003: break and continue ---
+// Demonstrates break and continue statements in loop blocks
+
+// Test 1: Basic break and continue with sum calculation
+print("=== Test 1: Break and Continue ===")
+mut sum = 0
+
+// CHANGE: Using break to exit loop when i == 5
+// CHANGE: Using continue to skip even numbers
+loop i in 0..10 {
+    if i == 5 { break }      // Exit loop when i equals 5
+    if i % 2 == 0 { continue }  // Skip even numbers
+    sum = sum + i
+}
+
+print("Sum of odd numbers before 5: " + str(sum))
+assert(sum == 4)  // 1 + 3 = 4
+
+// Test 2: Break in a conditional loop
+print("=== Test 2: Break with Conditional Loop ===")
+mut counter = 0
+mut result = 0
+
+// CHANGE: Using break to stop when counter reaches 10
+loop counter < 100 {
+    if counter == 10 { break }  // Break out of loop
+    result = result + counter
+    counter = counter + 1
+}
+
+print("Sum 0 to 9: " + str(result))
+assert(result == 45)  // 0+1+2+3+4+5+6+7+8+9 = 45
+
+// Test 3: Continue to skip specific values
+print("=== Test 3: Continue to Skip Multiples====")
+mut total = 0
+
+// CHANGE: Using continue to skip numbers divisible by 3
+loop num in 1..11 {
+    if num % 3 == 0 { continue }  // Skip multiples of 3
+    total = total + num
+}
+
+print("Sum skipping multiples of 3: " + str(total))
+assert(total == 37)  // 1+2+4+5+7+8+10 = 37
+
+print("All tests passed!")
