@@ -18,6 +18,7 @@ func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	env := evaluator.NewEnvironment()
 	evaluator.RegisterBuiltins(env)
+	evaluator.RegisterHOBuiltins(env)
 
 	fmt.Fprintf(out, "Glace v%s — type 'exit' to quit\n", VERSION)
 

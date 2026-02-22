@@ -1,0 +1,52 @@
+// Showcase: Binary search and selection sort implemented in Glace
+
+// --- Binary Search ---
+fn binary_search(arr, target) {
+    mut lo = 0
+    mut hi = len(arr) - 1
+    loop lo <= hi {
+        let mid = (lo + hi) / 2
+        if arr[mid] == target {
+            return mid
+        } elif arr[mid] < target {
+            lo = mid + 1
+        } else {
+            hi = mid - 1
+        }
+    }
+    return -1
+}
+
+let sorted = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
+print("Binary search 7  →", binary_search(sorted, 7))   // 3
+print("Binary search 1  →", binary_search(sorted, 1))   // 0
+print("Binary search 19 →", binary_search(sorted, 19))  // 9
+print("Binary search 4  →", binary_search(sorted, 4))   // -1
+
+// --- Selection Sort (using built-in sort as verification) ---
+fn selection_sort(arr) {
+    mut result = arr        // copy
+    mut i = 0
+    loop i < len(result) {
+        mut min_idx = i
+        mut j = i + 1
+        loop j < len(result) {
+            if result[j] < result[min_idx] {
+                min_idx = j
+            }
+            j = j + 1
+        }
+        // swap
+        let tmp = result[i]
+        result[i] = result[min_idx]
+        result[min_idx] = tmp
+        i = i + 1
+    }
+    return result
+}
+
+let unsorted = [64, 25, 12, 22, 11]
+print("Selection sort →", selection_sort(unsorted))  // [11, 12, 22, 25, 64]
+
+// Verify with built-in sort
+print("Built-in sort  →", sort(unsorted))

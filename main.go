@@ -63,6 +63,7 @@ func runFile(path string) {
 
 	env := evaluator.NewEnvironment()
 	evaluator.RegisterBuiltins(env)
+	evaluator.RegisterHOBuiltins(env)
 
 	_, evalErr := evaluator.Eval(program, env)
 	if evalErr != nil {
@@ -89,7 +90,7 @@ func testFile(path string) {
 
 	env := evaluator.NewEnvironment()
 	evaluator.RegisterBuiltins(env)
-
+	evaluator.RegisterHOBuiltins(env)
 	results := evaluator.RunTests(program, env)
 	passed, failed := 0, 0
 	for _, r := range results {
